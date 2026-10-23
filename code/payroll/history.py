@@ -52,8 +52,8 @@ def clean_employee_id(ids: pd.Series) -> pd.Series:
     - The mistake people make: stopping after `.upper()`. `"E4"` is not `"E004"`,
       and Step 2's merge will not match it to anyone on the roster.
     """
-    # TODO: your code here
-    pass
+    digits = ids.str.strip().str.upper().str[1:].str.zfill(3)
+    return "E" + digits
 
 
 def clean_number(values: pd.Series) -> pd.Series:
@@ -82,9 +82,12 @@ def clean_number(values: pd.Series) -> pd.Series:
     - This is `clean_currency` from Assignment 04, with no `apply` — the `.str`
       methods do the looping for you.
     """
-    # TODO: your code here
-    pass
-
+    cleaned = (
+        values.str.replace("$", "", regex=False)
+              .str.replace(",", "", regex=False)
+              .str.strip()
+    )
+    return pd.to_numeric(cleaned, errors="coerce").fillna(0.0)
 
 def parse_pay_date(values: pd.Series) -> pd.Series:
     """Parse pay dates written either way; return a datetime Series. Unreadable -> NaT.
