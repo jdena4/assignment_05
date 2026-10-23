@@ -113,8 +113,9 @@ def parse_pay_date(values: pd.Series) -> pd.Series:
       single format cannot read both styles — and guessing (leaving `format=` off)
       is how `"03/04/2026"` silently becomes April 3rd on someone's laptop.
     """
-    # TODO: your code here
-    pass
+    us = pd.to_datetime(values, format="%m/%d/%Y", errors="coerce")
+    iso = pd.to_datetime(values, format="%Y-%m-%d", errors="coerce")
+    return us.fillna(iso)
 
 
 def combine_exports(exports: list) -> pd.DataFrame:
@@ -132,8 +133,7 @@ def combine_exports(exports: list) -> pd.DataFrame:
       you write returns a DataFrame where you expected a row.
     - No `.copy()` needed — `concat` always builds a new frame.
     """
-    # TODO: your code here
-    pass
+    return pd.concat(exports, ignore_index=True)
 
 
 def add_clean_columns(history: pd.DataFrame) -> pd.DataFrame:
@@ -160,8 +160,13 @@ def add_clean_columns(history: pd.DataFrame) -> pd.DataFrame:
     - Why name the new column `employee_id` and not `employeeid_clean`? Because
       that is what the roster calls it, and Step 2 merges on it with `on=`.
     """
-    # TODO: your code here
-    pass
+    out = history.copy()
+    out["employee_id"] = clean_employee_id(out["employeeid"])
+    out["pay_date"] = parse_pay_date(out["payrolldate"])
+    out["hours_worked"] = clean_number(out["hours"])
+    out["rate_usd"] = clean_number(out["rate"])
+    out["gross_pay"] = clean_number(out["total"])
+    return out
 
 
 def add_date_parts(history: pd.DataFrame) -> pd.DataFrame:
@@ -183,5 +188,7 @@ def add_date_parts(history: pd.DataFrame) -> pd.DataFrame:
       from lesson 3-6: `%Y` year, `%m` month, `%d` day.)
     - `return out`. Requires `pay_date`, so it runs after `add_clean_columns`.
     """
-    # TODO: your code here
-    pass
+    out = history.copy()
+    out["week_ending"] = out["pay_date"].dt.strftime("%Y-%m-%d")
+    out["month"] = out["pay_date"].dt.strftime("%Y-%m")
+    return out
